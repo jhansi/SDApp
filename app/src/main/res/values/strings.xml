@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">SDApp</string>
+    <string name="top_files">Top 10 Biggest Files</string>
+    <string name="avg_file_size">Average File Size : </string>
+    <string name="freqFiles">Frequently Used Files</string>
+    <string name="action_scan">Scan</string>
+    <string name="action_share">Share</string>
+</resources>
