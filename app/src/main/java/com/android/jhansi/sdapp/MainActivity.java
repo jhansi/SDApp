@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
@@ -64,15 +65,14 @@ public class MainActivity extends AppCompatActivity {
     private long avgFileSize;
     private TextView textViewAvgFileSize;
 
+    public static boolean isSyncCompleted = false;
+
+    public static StringBuffer statistics = new StringBuffer();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       // doShare();
         setContentView(R.layout.activity_main);
-
-//        sqlitedatasource = new SQLiteDataSource(this);
-//        sqlitedatasource.open();
-
     }
 
     @Override
@@ -82,13 +82,15 @@ public class MainActivity extends AppCompatActivity {
 
         MenuItem item = menu.findItem(R.id.action_share);
 
-        // Get its ShareActionProvider
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
 
-        doShare();
-//        menu.getItem(0).setEnabled(false);
-//        menu.getItem(1).setEnabled(false);
-//        invalidateOptionsMenu();
+        if(isSyncCompleted) {
+            item.setVisible(true);
+            doShare();
+        }
+        else{
+            item.setVisible(false);
+        }
         return true;
     }
 
@@ -98,7 +100,9 @@ public class MainActivity extends AppCompatActivity {
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, "From me to you, this text is new.");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, statistics.toString());
+        //shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, Html.fromHtml("<p>This is the text shared.</p>"));
+
         // When sync is done
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(shareIntent);
@@ -123,6 +127,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
 
+            isSyncCompleted = false;
+
             FileScanService.LocalBinder localBinder = (FileScanService.LocalBinder)service;
             fileScanService = localBinder.getFileScanService();
             if(fileScanService != null){
@@ -130,11 +136,17 @@ public class MainActivity extends AppCompatActivity {
                // workerThread();
             }
             status = true;
+
+
+            isSyncCompleted = true;
+            invalidateOptionsMenu();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             status = false;
+            isSyncCompleted = true;
+            invalidateOptionsMenu();
         }
     };
 
@@ -179,10 +191,12 @@ public class MainActivity extends AppCompatActivity {
              checkForPermissions();
         if(status) {
 
-            fileScanService.scanSDcard(Environment.getExternalStorageDirectory()); //TODO to be uncommented
+            statistics.setLength(0);
+            statistics.append(getResources().getString(R.string.top_files));
+//            fileScanService.scanSDcard(Environment.getExternalStorageDirectory()); //TODO to be uncommented
 
-//            File WhatsApp = new File("/storage/emulated/0/WhatsApp/Profile Pictures");
-//            fileScanService.scanSDcard(WhatsApp);
+            File WhatsApp = new File("/storage/emulated/0/WhatsApp/Profile Pictures");
+            fileScanService.scanSDcard(WhatsApp);
             List<FileEntry> fileEntries = fileScanService.getLargestTenFiles();
 
            // fileScanService.workerThread();
@@ -202,7 +216,11 @@ public class MainActivity extends AppCompatActivity {
     private void updateAvgSizeTextView() {
         textViewAvgFileSize =  (TextView) findViewById(R.id.textViewAvgFileSize);
         String file_size_avg = android.text.format.Formatter.formatFileSize(this, avgFileSize);
-        textViewAvgFileSize.setText(textViewAvgFileSize.getText() +" "+file_size_avg);
+        Resources res = getResources();
+        String text = String.format(res.getString(R.string.avg_file_size_data), file_size_avg);
+       // textViewAvgFileSize.setText(textViewAvgFileSize.getText() +" "+file_size_avg);
+        statistics.append("."+text);
+        textViewAvgFileSize.setText(text);
     }
 
     void checkForPermissions() {
@@ -236,11 +254,15 @@ public class MainActivity extends AppCompatActivity {
         for(FileEntry fileEntry : fileEntries ){
             Map<String, String> listItemMap = new HashMap<String, String>();
            // listItemMap.put(fileEntry.getFile_name(), fileEntry.getFile_size());
-            listItemMap.put(FILE_NAME, fileEntry.getFile_name());
+            String file_name = fileEntry.getFile_name();
+            listItemMap.put(FILE_NAME, file_name);
+
+            statistics.append(" " + file_name);
 
             String file_size = android.text.format.Formatter.formatFileSize(this, fileEntry.getFile_size());
             listItemMap.put(FILE_SIZE, file_size);
 
+            statistics.append("(" + file_size + "),");
             listLargestFiles.add(listItemMap);
         }
 
@@ -284,29 +306,52 @@ public class MainActivity extends AppCompatActivity {
         TextView textViewFreq4 = (TextView) findViewById(R.id.textViewFreq4);
         TextView textViewFreq5 = (TextView) findViewById(R.id.textViewFreq5);
 
+        statistics.append("."+getResources().getString(R.string.freqFiles));
+
 
         if(listExtFreq.size() > 0) {
-            textViewExt1.setText(listExtFreq.get(0).get(FILE_EXT));
-            textViewFreq1.setText(listExtFreq.get(0).get(FILE_FREQ));
+            String ext = listExtFreq.get(0).get(FILE_EXT);
+            String freq = listExtFreq.get(0).get(FILE_FREQ);
+            textViewExt1.setText(ext);
+            textViewFreq1.setText(freq);
+            statistics.append(ext + "("+freq +"), ");
         }
         if(listExtFreq.size() > 1) {
-            textViewExt2.setText(listExtFreq.get(1).get(FILE_EXT));
-            textViewFreq2.setText(listExtFreq.get(1).get(FILE_FREQ));
+            String ext = listExtFreq.get(1).get(FILE_EXT);
+            String freq = listExtFreq.get(1).get(FILE_FREQ);
+            textViewExt2.setText(ext);
+            textViewFreq2.setText(freq);
+            statistics.append(ext + "(" + freq + "), ");
 
         }
         if(listExtFreq.size() > 2){
-            textViewFreq3.setText(listExtFreq.get(2).get(FILE_FREQ));
+            String ext = listExtFreq.get(2).get(FILE_EXT);
+            String freq = listExtFreq.get(2).get(FILE_FREQ);
+
+            textViewFreq3.setText(ext);
             textViewExt3.setText(listExtFreq.get(2).get(FILE_EXT));
+            statistics.append(ext + "(" + freq + "), ");
+
         }
 
         if(listExtFreq.size() > 3){
-            textViewExt4.setText(listExtFreq.get(3).get(FILE_EXT));
-            textViewFreq4.setText(listExtFreq.get(3).get(FILE_FREQ));
+            String ext = listExtFreq.get(3).get(FILE_EXT);
+            String freq = listExtFreq.get(3).get(FILE_FREQ);
+
+            textViewExt4.setText(ext);
+            textViewFreq4.setText(freq);
+            statistics.append(ext + "(" + freq + "), ");
+
         }
 
         if(listExtFreq.size() > 4) {
-            textViewExt5.setText(listExtFreq.get(4).get(FILE_EXT));
-            textViewFreq5.setText(listExtFreq.get(4).get(FILE_FREQ));
+            String ext = listExtFreq.get(4).get(FILE_EXT);
+            String freq = listExtFreq.get(4).get(FILE_FREQ);
+
+            textViewExt5.setText(ext);
+            textViewFreq5.setText(freq);
+            statistics.append(ext + "(" + freq + ").");
+
         }
 
     }
