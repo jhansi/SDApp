@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- The preferred padding along the start edge of list items. -->
+    <attr name="listPreferredItemPaddingStart" format="dimension" />
+    <!-- The preferred padding along the end edge of list items. -->
+    <attr name="listPreferredItemPaddingEnd" format="dimension" />
+
+    <!-- The preferred TextAppearance for the secondary text of list items. -->
+    <attr name="textAppearanceListItemSecondary" format="reference" />
+</resources>

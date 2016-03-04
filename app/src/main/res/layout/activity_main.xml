@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport = "true"
-    >
+<!--<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:fillViewport = "true"-->
+    <!-->-->
 <LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -25,17 +25,21 @@
         android:focusableInTouchMode="false"
         android:text="@string/top_files"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@android:color/black"/>
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:paddingBottom="10dp"
+       />
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="240dp"
+        android:layout_height="0dp"
         android:id="@+id/listView_bigfiles"
         android:layout_gravity="center_horizontal"
-        android:divider="#8f8282"/>
+        android:divider="#8f8282"
+        android:layout_weight="0.1"/>
     <View
         style="@style/Divider"
-        android:layout_marginTop="10dp" />
+        android:layout_margin="10dp"/>
 
 
     <TextView
@@ -43,13 +47,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:focusableInTouchMode="false"
+
+        android:textStyle="bold"
         android:text="@string/avg_file_size"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="@android:color/black"/>
 
     <View
         style="@style/Divider"
-        android:layout_marginTop="10dp" />
+        android:layout_margin="10dp" />
 
     <TextView
         android:id="@+id/textViewFreqFiles"
@@ -58,13 +64,174 @@
         android:focusableInTouchMode="false"
         android:text="@string/freqFiles"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@android:color/black"/>
+        android:textColor="@android:color/black"
+        android:textStyle="bold"/>
 
-    <ListView
+    <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="240dp"
-        android:id="@+id/listView_freqfiles"
-        android:layout_gravity="center_horizontal"
-        android:divider="#8f8282"/>
+        android:layout_height="wrap_content"
+        android:stretchColumns="*"
+        android:gravity="center_horizontal">
+
+        <TableRow
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/textExt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:focusableInTouchMode="false"
+
+                android:text="@string/ext"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@android:color/black"
+
+                android:gravity="center_horizontal" />
+
+
+            <TextView
+                android:id="@+id/textFreq"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:focusableInTouchMode="false"
+                android:text="@string/freq"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@android:color/black"
+
+                android:gravity="center_horizontal" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/textViewExt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+
+            <TextView
+                android:id="@+id/textViewFreq1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+        </TableRow>
+        <TableRow
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/textViewExt2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+
+            <TextView
+                android:id="@+id/textViewFreq2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+        </TableRow>
+        <TableRow
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/textViewExt3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+
+            <TextView
+                android:id="@+id/textViewFreq3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+        </TableRow>
+        <TableRow
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/textViewExt4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+
+            <TextView
+                android:id="@+id/textViewFreq4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+        </TableRow>
+        <TableRow
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/textViewExt5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+
+            <TextView
+                android:id="@+id/textViewFreq5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:focusableInTouchMode="false"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:gravity="center" />
+
+        </TableRow>
+    </TableLayout>
 </LinearLayout>
-</ScrollView>
+<!--</ScrollView>-->

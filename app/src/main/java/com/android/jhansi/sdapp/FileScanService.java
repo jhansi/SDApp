@@ -11,7 +11,9 @@ import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 /**
@@ -24,7 +26,7 @@ public class FileScanService extends Service {
 
     private static final String TAG = FileScanService.class.getSimpleName();
 
-
+    SQLiteDataSource sqlitedatasource;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -34,6 +36,7 @@ public class FileScanService extends Service {
     public IBinder onBind(Intent intent) {
         return iBinder;
     }
+
 
     public class LocalBinder extends Binder {
         public FileScanService getFileScanService(){
@@ -60,15 +63,20 @@ public class FileScanService extends Service {
         }).start();
     }
 
+void scanSDcard(File directory){
+    sqlitedatasource = new SQLiteDataSource(this);
+    sqlitedatasource.open();
+    sqlitedatasource.deleteAllEntries();
+    getAllFilesOfDir(directory);
 
+}
 
-    List<FileEntry>  getAllFilesOfDir(File directory) {
+    void  getAllFilesOfDir(File directory) {
         Log.d(TAG, "Directory: " + directory.getAbsolutePath() + "\n");
-        SQLiteDataSource sqlitedatasource = new SQLiteDataSource(this);
-        sqlitedatasource.open();
+
 
         //List<String> fileList = new ArrayList<String>();
-        List<FileEntry> fileEntries = new ArrayList<FileEntry>();
+
         final File[] files = directory.listFiles();
         String filename;
 
@@ -79,22 +87,52 @@ public class FileScanService extends Service {
                         getAllFilesOfDir(file);
                     } else {  // it is a file...
                         filename = file.getName();
-
-                        sqlitedatasource.createFileEnrty(filename, (int)file.length(), getFileExt(filename));
-                        Log.d(TAG, "File: " + filename + file.length() + getFileExt(filename) +"\n");
+                        if(accept(filename)) {
+                            sqlitedatasource.createFileEnrty(filename, (int) file.length(), getFileExt(filename));
+                            Log.d(TAG, "File: " + filename + " " + file.length() + " " + getFileExt(filename) + "\n");
+                        }
                         //fileList.add(file.getName());
 
-                        fileEntries = sqlitedatasource.getLargestAllFileEntry();
+
                     }
                 }
             }
         }
-        sqlitedatasource.close();
-    return fileEntries;
+        return;
     }
 
+    List<FileEntry> getLargestTenFiles(){
+        SQLiteDataSource sqlitedatasource = new SQLiteDataSource(this);
+        sqlitedatasource.open();
+
+        List<FileEntry> fileEntries = new ArrayList<FileEntry>();
+        fileEntries = sqlitedatasource.getLargestAllFileEntry();
+        sqlitedatasource.close();
+        return fileEntries;
+
+    }
+
+    private final List<String> exts = Arrays.asList("jpeg", "jpg", "png", "bmp", "gif", ".mp3", ".mp4", ".pdf",".txt" , ".xml", ".doc",
+            ".xls",".xlsx", "ogg");
+
+
+    public boolean accept(String filename) {
+        String ext;
+//        String path = pathname.getPath();
+//        ext = path.substring(path.lastIndexOf(".") + 1);
+
+        ext = getFileExt(filename);
+        return exts.contains(ext);
+    }
     public static String getFileExt(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
     }
 
+    public long getAvgFileSize(){
+       return sqlitedatasource.getAverageFilesize();
+    }
+
+    public List<Map<String,String>> getFrequentFiles(){
+        return sqlitedatasource.getFrequentFiles();
+    }
 }

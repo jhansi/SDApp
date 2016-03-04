@@ -8,7 +8,7 @@ public class FileEntry {
 
     private long id;
     private String file_name;
-    private int file_size;
+    private long file_size;
     private String file_ext;
 
 
@@ -27,11 +27,12 @@ public class FileEntry {
         this.file_name = file_name;
     }
 
-    public int getFile_size() {
-        return file_size;
+    public long getFile_size() {
+        return (file_size);
+       // return Integer.toString(file_size);
     }
 
-    public void setFile_size(int file_size) {
+    public void setFile_size(long file_size) {
         this.file_size = file_size;
     }
 
