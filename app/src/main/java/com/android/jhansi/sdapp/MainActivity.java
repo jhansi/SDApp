@@ -188,6 +188,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void updateUI() {
+        statistics.setLength(0);
+        statistics.append(getResources().getString(R.string.top_files)+ " : ");
+
         updateListView(parcelableData.listLargeFiles);
         updateAvgSizeTextView(parcelableData.avgFileSize);
         updateEXtFreqTable(parcelableData.listFrequentFiles);
@@ -203,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             if (status) {
 
                 statistics.setLength(0);
-                statistics.append(getResources().getString(R.string.top_files));
+                statistics.append(getResources().getString(R.string.top_files)+ " : ");
                 fileScanService.scanSDcard(Environment.getExternalStorageDirectory());
 
                 List<FileEntry> fileEntries = fileScanService.getLargestTenFiles();
@@ -302,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
         TextView textViewFreq4 = (TextView) findViewById(R.id.textViewFreq4);
         TextView textViewFreq5 = (TextView) findViewById(R.id.textViewFreq5);
 
-        statistics.append("." + getResources().getString(R.string.freqFiles));
+        statistics.append("." + getResources().getString(R.string.freqFiles) +" : ");
 
 
         if (listExtFreq.size() > 0) {
@@ -324,8 +327,8 @@ public class MainActivity extends AppCompatActivity {
             String ext = listExtFreq.get(2).get(FILE_EXT);
             String freq = listExtFreq.get(2).get(FILE_FREQ);
 
-            textViewFreq3.setText(ext);
-            textViewExt3.setText(freq);
+            textViewFreq3.setText(freq);
+            textViewExt3.setText(ext);
             statistics.append(ext + "(" + freq + "), ");
 
         }
@@ -355,9 +358,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void showDialog() {
         myDialog = new ProgressDialog(MainActivity.this);
-        myDialog.setMessage("Scanning...");
+        myDialog.setMessage(getResources().getString(R.string.scanning));
         myDialog.setCancelable(true);
-        myDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+        myDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 isSyncCompleted = false;
