@@ -1,11 +1,16 @@
 package com.android.jhansi.sdapp;
 
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,8 +30,16 @@ public class FileScanService extends Service {
 
     final static String MY_ACTION = "MY_ACTION";
 
+    private Handler handler = new Handler();
+    Thread thread;
+     public static boolean status = true;
 
     SQLiteDataSource sqlitedatasource;
+
+    private NotificationManager mNotifyManager;
+    private NotificationCompat.Builder mBuilder;
+
+    private static final int NOTIFICATION_ID = 1;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -39,8 +52,6 @@ public class FileScanService extends Service {
             return FileScanService.this;
         }
     }
-
-
 
 
 void scanSDcard(File directory){
@@ -116,10 +127,12 @@ void scanSDcard(File directory){
 
         Log.i(TAG, "Service onStartCommand");
 
-        new Thread(new Runnable() {
+        status = true;
+       thread = new Thread(new Runnable() {
             @Override
             public void run() {
 
+                showNotification();
                 scanSDcard(Environment.getExternalStorageDirectory());
 
                 List<FileEntry> list = getLargestTenFiles();
@@ -131,16 +144,50 @@ void scanSDcard(File directory){
                 MainActivity.parcelableData.setListFrequentFiles(listFreqFiles);
                 MainActivity.parcelableData.setListLargeFiles(list);
 
-                Intent intent = new Intent();
-                intent.setAction(MY_ACTION);
+                if(status) {
+                    Intent intent = new Intent();
+                    intent.setAction(MY_ACTION);
 
-                sendBroadcast(intent);
-
+                    sendBroadcast(intent);
+                    mBuilder.setContentText(getResources().getString(R.string.NotificationTitleDone)).setProgress(0,0,false);
+                    mNotifyManager.notify(NOTIFICATION_ID, mBuilder.build());
+                }
                 stopSelf();
             }
-        }).start();
+        });
+        thread.start();
 
         return Service.START_STICKY;
     }
 
+
+    private void showNotification(){
+
+        mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mBuilder = new NotificationCompat.Builder(this);
+        mBuilder.setContentTitle(getResources().getString(R.string.NotificationTitle))
+                .setContentText(getResources().getString(R.string.NotificationText))
+                .setSmallIcon(R.drawable.ic_action_sync);
+        mBuilder.setProgress(0, 0, true);
+        mBuilder.setAutoCancel(true);
+        mNotifyManager.notify(NOTIFICATION_ID, mBuilder.build());
+
+    }
+
+    @Override
+    public void onDestroy() {
+        Toast.makeText(this, "service onDestroy", Toast.LENGTH_LONG).show();
+       // Utils.cancelNotification(this);
+        status = false;
+        handler.removeCallbacksAndMessages(thread);
+        mBuilder.setContentText(getResources().getString(R.string.NotificationTitleCancel)).setProgress(0, 0, false);
+        mNotifyManager.notify(NOTIFICATION_ID, mBuilder.build());
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean stopService(Intent name) {
+        status = false;
+        return super.stopService(name);
+    }
 }

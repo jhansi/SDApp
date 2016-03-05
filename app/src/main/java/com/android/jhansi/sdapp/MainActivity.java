@@ -13,7 +13,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -32,7 +31,6 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String FILE_EXT = "ext";
     private static final String FILE_FREQ = "freq";
 
-
-    private SQLiteDataSource sqlitedatasource;
 
     private ShareActionProvider mShareActionProvider;
 
@@ -116,6 +112,14 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    public void onBackPressed() {
+        //moveTaskToBack(true);
+        super.onBackPressed();
+        isSyncCompleted = false;
+        MainActivity.this.stopService(new Intent(MainActivity.this, FileScanService.class));
+    }
+
     // When sync is done
     public void doShare() {
 
@@ -123,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, statistics.toString());
-        //shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, Html.fromHtml("<p>This is the text shared.</p>"));
 
         // When sync is done
         if (mShareActionProvider != null) {
@@ -134,12 +137,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_sync:
-                //ShowDialogThread();
                 showDialog();
                 //bindFileScanService(); //TODO uncomment later
-               // workerThread();
                 Intent intent = new Intent(this, FileScanService.class);
-                startService(intent);
+                this.startService(intent);
                 return true;
 
             default:
@@ -158,10 +159,8 @@ public class MainActivity extends AppCompatActivity {
             fileScanService = localBinder.getFileScanService();
             if(fileScanService != null){
                 scanSDCard();
-               // workerThread();
             }
             status = true;
-
 
             isSyncCompleted = true;
             invalidateOptionsMenu();
@@ -180,8 +179,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, FileScanService.class);
         bindService(intent,serviceConnection, Context.BIND_AUTO_CREATE);
         status = true;
-    //display UI
-        Toast.makeText(MainActivity.this, "Service binded", Toast.LENGTH_SHORT).show();
     }
 
     private void unbindFileScanService(){
@@ -194,27 +191,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-//    void workerThread(){
-//        final Handler threadHandler;
-//        threadHandler = new Handler();
-//
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                threadHandler.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        bindFileScanService();
-//                    }
-//                });
-//            }
-//        }).start();
-//    }
-
     private void updateUI(){
         updateListView(parcelableData.listLargeFiles);
         updateAvgSizeTextView(parcelableData.avgFileSize);
         updateEXtFreqTable(parcelableData.listFrequentFiles);
+
+        isSyncCompleted = true;
+        invalidateOptionsMenu();
     }
 
     private void scanSDCard(){
@@ -227,18 +210,13 @@ public class MainActivity extends AppCompatActivity {
             statistics.append(getResources().getString(R.string.top_files));
             fileScanService.scanSDcard(Environment.getExternalStorageDirectory()); //TODO to be uncommented
 
-//            File WhatsApp = new File("/storage/emulated/0/WhatsApp/Profile Pictures");
-//            fileScanService.scanSDcard(WhatsApp);
             List<FileEntry> fileEntries = fileScanService.getLargestTenFiles();
-
-           // fileScanService.workerThread();
             updateListView(fileEntries);
 
             avgFileSize = fileScanService.getAvgFileSize();
             updateAvgSizeTextView(avgFileSize);
 
             List<Map<String,String>>  ListExtFreq  = fileScanService.getFrequentFiles();
-
             updateEXtFreqTable(ListExtFreq);
         }
     }
@@ -250,7 +228,6 @@ public class MainActivity extends AppCompatActivity {
         String file_size_avg = android.text.format.Formatter.formatFileSize(this, avgFileSize);
         Resources res = getResources();
         String text = String.format(res.getString(R.string.avg_file_size_data), file_size_avg);
-       // textViewAvgFileSize.setText(textViewAvgFileSize.getText() +" "+file_size_avg);
         statistics.append("."+text);
         textViewAvgFileSize.setText(text);
     }
@@ -258,13 +235,10 @@ public class MainActivity extends AppCompatActivity {
     void checkForPermissions() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            // Assume thisActivity is the current activity
             int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            // Here, thisActivity is the current activity
             if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                     && permissionCheck != PackageManager.PERMISSION_GRANTED) {
 
-                // Should we show an explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) ) {
 
                 } else {
@@ -285,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
 
         for(FileEntry fileEntry : fileEntries ){
             Map<String, String> listItemMap = new HashMap<String, String>();
-           // listItemMap.put(fileEntry.getFile_name(), fileEntry.getFile_size());
             String file_name = fileEntry.getFile_name();
             listItemMap.put(FILE_NAME, file_name);
 
@@ -387,16 +360,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-//    private void ShowNotification(){
-//        Notification notification = new Notification(R.drawable.icon, getText(R.string.ticker_text),
-//                System.currentTimeMillis());
-//        Intent notificationIntent = new Intent(this, ExampleActivity.class);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-//        notification.setLatestEventInfo(this, getText(R.string.notification_title),
-//                getText(R.string.notification_message), pendingIntent);
-//        startForeground(ONGOING_NOTIFICATION_ID, notification);
-//
-//    }
+
 
     private void showDialog(){
         myDialog = new ProgressDialog(MainActivity.this);
@@ -405,34 +369,24 @@ public class MainActivity extends AppCompatActivity {
         myDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
+                isSyncCompleted = false;
+                MainActivity.this.stopService(new Intent(MainActivity.this, FileScanService.class));
             }
         });
         myDialog.show();
-    }
-
-    public void ShowDialogThread(){
-        final Handler threadHandler;
-        threadHandler = new Handler();
-
-        new Thread(new Runnable() {
+        myDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
-            public void run() {
-                threadHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        showDialog();
-                    }
-                });
+            public void onCancel(DialogInterface dialog) {
+                isSyncCompleted = false;
+                MainActivity.this.stopService(new Intent(MainActivity.this, FileScanService.class));
             }
-        }).start();
+        });
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         unregisterReceiver(myReceiver);
-        super.onStop();
     }
 
 

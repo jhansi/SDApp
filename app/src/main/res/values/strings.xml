@@ -3,9 +3,13 @@
     <string name="top_files">Largest Files : </string>
     <string name="avg_file_size">Average File Size : </string>
     <string name="avg_file_size_data">Average File Size : %1$s</string>
-    <string name="freqFiles">Frequently Used Files:</string>
+    <string name="freqFiles">Frequent Files:</string>
     <string name="action_scan">Scan</string>
     <string name="action_share">Share</string>
     <string name="ext">File Type</string>
     <string name="freq">Frequency (%)</string>
+    <string name="NotificationTitle">SDApp</string>
+    <string name="NotificationText">Scanning in Progress,Please wait</string>
+    <string name="NotificationTitleDone">Scanning complete</string>
+    <string name="NotificationTitleCancel">Scanning cancelled</string>
 </resources>
