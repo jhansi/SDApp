@@ -180,8 +180,9 @@ public class FileScanService extends Service {
         // Toast.makeText(this, "service onDestroy", Toast.LENGTH_LONG).show();
         status = false;
         handler.removeCallbacksAndMessages(thread);
-        mBuilder.setContentText(getResources().getString(R.string.NotificationTitleCancel)).setProgress(0, 0, false);
-        mNotifyManager.notify(NOTIFICATION_ID, mBuilder.build());
+      //  mBuilder.setContentText(getResources().getString(R.string.NotificationTitleCancel)).setProgress(0, 0, false);
+      //  mNotifyManager.notify(NOTIFICATION_ID, mBuilder.build());
+        mNotifyManager.cancel(NOTIFICATION_ID);
         super.onDestroy();
     }
 
