@@ -18,9 +18,10 @@ import java.util.Map;
  */
 public class SQLiteDataSource {
     public static final String TAG = SQLiteDataSource.class.getSimpleName();
-    // Database fields
+
     private SQLiteDatabase database;
     private SQLiteHelper dbHelper;
+    // Database fields
     private String[] allColumns = {SQLiteHelper.COLUMN_ID, SQLiteHelper.COLUMN_FILE_NAME, SQLiteHelper.COLUMN_FILE_SIZE, SQLiteHelper.COLUMN_FILE_EXT};
     private static long insertId = 0;
     private static long totalFileSize = 0;
@@ -62,7 +63,7 @@ public class SQLiteDataSource {
 
     public void deleteAllEntries() {
         // Log.w(TAG, "table deleted");
-        database.delete(SQLiteHelper.TABLE_SDFILES, null, null);
+        int ret = database.delete(SQLiteHelper.TABLE_SDFILES, null, null);
     }
 
     public List<FileEntry> getAllFileEntry() {

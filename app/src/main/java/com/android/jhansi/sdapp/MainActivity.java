@@ -325,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
             String freq = listExtFreq.get(2).get(FILE_FREQ);
 
             textViewFreq3.setText(ext);
-            textViewExt3.setText(listExtFreq.get(2).get(FILE_EXT));
+            textViewExt3.setText(freq);
             statistics.append(ext + "(" + freq + "), ");
 
         }
