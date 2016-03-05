@@ -31,11 +31,14 @@ Usual android setup
     
 ## Android Version Targeting
 
-DesignChallange is currently built to work with Android API 23(Marshmallow). **However**, DesignChallange's minimum SDK support is 15(Ice Cream Sandwich).
+SDApp is currently built to work with Android API 23(Marshmallow). **However**, SDApp's minimum SDK support is 14(Ice Cream Sandwich).
 
 ## Usage Instructions
 SDApp application is developed as a part of codding challange.
-Which scans the whole SDCard and displays Largest 10 files, Averae file size and frquency of top 5 files
+Which scans the whole SDCard and displays Largest 10 files, Averae file size and frquency of top 5 files.
+For readability files with common extentions are filtered. ("jpeg", "jpg", "png", "bmp", "gif", ".mp3", ".mp4", ".pdf", ".txt", ".xml", ".doc",".xls", ".xlsx", "ogg").
+
+-After launching the application chick on refresh/ scan button. Please wait for the process to finish.
 
 ##License
-[License](https://github.com/jhansi/DesignChallenge/blob/master/LICENSE-2.0.txt)
+[License](https://github.com/jhansi/SDApp/blob/master/LICENSE-2.0.txt)
