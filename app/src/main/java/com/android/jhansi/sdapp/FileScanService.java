@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
-import android.os.Parcelable;
 import android.util.Log;
 
 import java.io.File;
@@ -29,10 +28,6 @@ public class FileScanService extends Service {
 
     SQLiteDataSource sqlitedatasource;
 
-//    @Override
-//    public int onStartCommand(Intent intent, int flags, int startId) {
-//        return Service.START_STICKY;
-//    }
     @Override
     public IBinder onBind(Intent intent) {
         return iBinder;
@@ -46,23 +41,7 @@ public class FileScanService extends Service {
     }
 
 
-//    void workerThread(){
-//        final Handler threadHandler;
-//        threadHandler = new Handler();
-//
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                threadHandler.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        File directory = Environment.getExternalStorageDirectory();
-//                        getAllFilesOfDir( directory);
-//                    }
-//                });
-//            }
-//        }).start();
-//    }
+
 
 void scanSDcard(File directory){
     sqlitedatasource = new SQLiteDataSource(this);
@@ -75,8 +54,6 @@ void scanSDcard(File directory){
     void  getAllFilesOfDir(File directory) {
         Log.d(TAG, "Directory: " + directory.getAbsolutePath() + "\n");
 
-
-        //List<String> fileList = new ArrayList<String>();
 
         final File[] files = directory.listFiles();
         String filename;
@@ -92,8 +69,6 @@ void scanSDcard(File directory){
                             sqlitedatasource.createFileEnrty(filename, (int) file.length(), getFileExt(filename));
                             Log.d(TAG, "File: " + filename + " " + file.length() + " " + getFileExt(filename) + "\n");
                         }
-                        //fileList.add(file.getName());
-
 
                     }
                 }
@@ -119,8 +94,6 @@ void scanSDcard(File directory){
 
     public boolean accept(String filename) {
         String ext;
-//        String path = pathname.getPath();
-//        ext = path.substring(path.lastIndexOf(".") + 1);
 
         ext = getFileExt(filename);
         return exts.contains(ext);
@@ -138,29 +111,16 @@ void scanSDcard(File directory){
     }
 
 
-    public long getAvgFileSizeFromService(){
-        return MainActivity.parcelableData.avgFileSize;
-    }
-
-    public List<Map<String,String>> getFrequentFilesFromService(){
-        return MainActivity.parcelableData.listFrequentFiles;
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         Log.i(TAG, "Service onStartCommand");
 
-        //Creating new thread for my service
-        //Always write your long running tasks in a separate thread, to avoid ANR
         new Thread(new Runnable() {
             @Override
             public void run() {
 
-                File WhatsApp = new File("/storage/emulated/0/WhatsApp/Profile Pictures");
-
-                scanSDcard(WhatsApp); //TODO change later
-//                scanSDcard(Environment.getExternalStorageDirectory());
+                scanSDcard(Environment.getExternalStorageDirectory());
 
                 List<FileEntry> list = getLargestTenFiles();
                 long avgFileSize = getAvgFileSize();
@@ -173,8 +133,7 @@ void scanSDcard(File directory){
 
                 Intent intent = new Intent();
                 intent.setAction(MY_ACTION);
-//
-//                intent.putExtra("DATAPASSED",  parcelableData);
+
                 sendBroadcast(intent);
 
                 stopSelf();

@@ -399,7 +399,7 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     private void showDialog(){
-        ProgressDialog myDialog = new ProgressDialog(MainActivity.this);
+        myDialog = new ProgressDialog(MainActivity.this);
         myDialog.setMessage("Scanning...");
         myDialog.setCancelable(true);
         myDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
@@ -431,7 +431,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-//        unbindFileScanService();
         unregisterReceiver(myReceiver);
         super.onStop();
     }
@@ -441,12 +440,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context arg0, Intent arg1) {
-
             updateUI();
-            Toast.makeText(MainActivity.this,
-                    "Triggered by Service!\n"
-                            + "Data passed: " ,
-                    Toast.LENGTH_LONG).show();
+            if(myDialog != null)
+                myDialog.dismiss();
+
 
         }
 
