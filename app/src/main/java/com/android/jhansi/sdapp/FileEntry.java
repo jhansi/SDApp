@@ -19,6 +19,7 @@ public class FileEntry {
     public void setId(long id) {
         this.id = id;
     }
+
     public String getFile_name() {
         return file_name;
     }
@@ -29,7 +30,6 @@ public class FileEntry {
 
     public long getFile_size() {
         return (file_size);
-       // return Integer.toString(file_size);
     }
 
     public void setFile_size(long file_size) {

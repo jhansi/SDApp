@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class FileScanService extends Service {
 
-    private  final IBinder iBinder = new LocalBinder();
+    private final IBinder iBinder = new LocalBinder();
 
     private static final String TAG = FileScanService.class.getSimpleName();
 
@@ -32,7 +32,7 @@ public class FileScanService extends Service {
 
     private Handler handler = new Handler();
     Thread thread;
-     public static boolean status = true;
+    public static boolean status = true;
 
     SQLiteDataSource sqlitedatasource;
 
@@ -48,22 +48,22 @@ public class FileScanService extends Service {
 
 
     public class LocalBinder extends Binder {
-        public FileScanService getFileScanService(){
+        public FileScanService getFileScanService() {
             return FileScanService.this;
         }
     }
 
 
-void scanSDcard(File directory){
-    sqlitedatasource = new SQLiteDataSource(this);
-    sqlitedatasource.open();
-    sqlitedatasource.deleteAllEntries();
-    getAllFilesOfDir(directory);
+    void scanSDcard(File directory) {
+        sqlitedatasource = new SQLiteDataSource(this);
+        sqlitedatasource.open();
+        sqlitedatasource.deleteAllEntries();
+        getAllFilesOfDir(directory);
 
-}
+    }
 
-    void  getAllFilesOfDir(File directory) {
-        Log.d(TAG, "Directory: " + directory.getAbsolutePath() + "\n");
+    void getAllFilesOfDir(File directory) {
+        // Log.d(TAG, "Directory: " + directory.getAbsolutePath() + "\n");
 
 
         final File[] files = directory.listFiles();
@@ -76,9 +76,9 @@ void scanSDcard(File directory){
                         getAllFilesOfDir(file);
                     } else {  // it is a file...
                         filename = file.getName();
-                        if(accept(filename)) {
+                        if (accept(filename)) {
                             sqlitedatasource.createFileEnrty(filename, (int) file.length(), getFileExt(filename));
-                            Log.d(TAG, "File: " + filename + " " + file.length() + " " + getFileExt(filename) + "\n");
+                            //  Log.d(TAG, "File: " + filename + " " + file.length() + " " + getFileExt(filename) + "\n");
                         }
 
                     }
@@ -88,7 +88,7 @@ void scanSDcard(File directory){
         return;
     }
 
-    List<FileEntry> getLargestTenFiles(){
+    List<FileEntry> getLargestTenFiles() {
         SQLiteDataSource sqlitedatasource = new SQLiteDataSource(this);
         sqlitedatasource.open();
 
@@ -99,8 +99,8 @@ void scanSDcard(File directory){
 
     }
 
-    private final List<String> exts = Arrays.asList("jpeg", "jpg", "png", "bmp", "gif", ".mp3", ".mp4", ".pdf",".txt" , ".xml", ".doc",
-            ".xls",".xlsx", "ogg");
+    private final List<String> exts = Arrays.asList("jpeg", "jpg", "png", "bmp", "gif", ".mp3", ".mp4", ".pdf", ".txt", ".xml", ".doc",
+            ".xls", ".xlsx", "ogg");
 
 
     public boolean accept(String filename) {
@@ -109,15 +109,16 @@ void scanSDcard(File directory){
         ext = getFileExt(filename);
         return exts.contains(ext);
     }
+
     public static String getFileExt(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
     }
 
-    public long getAvgFileSize(){
-       return sqlitedatasource.getAverageFilesize();
+    public long getAvgFileSize() {
+        return sqlitedatasource.getAverageFilesize();
     }
 
-    public List<Map<String,String>> getFrequentFiles(){
+    public List<Map<String, String>> getFrequentFiles() {
         return sqlitedatasource.getFrequentFiles();
     }
 
@@ -125,10 +126,10 @@ void scanSDcard(File directory){
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.i(TAG, "Service onStartCommand");
+        //  Log.i(TAG, "Service onStartCommand");
 
         status = true;
-       thread = new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
 
@@ -137,19 +138,19 @@ void scanSDcard(File directory){
 
                 List<FileEntry> list = getLargestTenFiles();
                 long avgFileSize = getAvgFileSize();
-                List<Map<String,String>> listFreqFiles = getFrequentFiles();
+                List<Map<String, String>> listFreqFiles = getFrequentFiles();
 
 
                 MainActivity.parcelableData.setAvgFileSize(avgFileSize);
                 MainActivity.parcelableData.setListFrequentFiles(listFreqFiles);
                 MainActivity.parcelableData.setListLargeFiles(list);
 
-                if(status) {
+                if (status) {
                     Intent intent = new Intent();
                     intent.setAction(MY_ACTION);
 
                     sendBroadcast(intent);
-                    mBuilder.setContentText(getResources().getString(R.string.NotificationTitleDone)).setProgress(0,0,false);
+                    mBuilder.setContentText(getResources().getString(R.string.NotificationTitleDone)).setProgress(0, 0, false);
                     mNotifyManager.notify(NOTIFICATION_ID, mBuilder.build());
                 }
                 stopSelf();
@@ -161,7 +162,7 @@ void scanSDcard(File directory){
     }
 
 
-    private void showNotification(){
+    private void showNotification() {
 
         mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(this);
@@ -176,8 +177,7 @@ void scanSDcard(File directory){
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "service onDestroy", Toast.LENGTH_LONG).show();
-       // Utils.cancelNotification(this);
+        // Toast.makeText(this, "service onDestroy", Toast.LENGTH_LONG).show();
         status = false;
         handler.removeCallbacksAndMessages(thread);
         mBuilder.setContentText(getResources().getString(R.string.NotificationTitleCancel)).setProgress(0, 0, false);

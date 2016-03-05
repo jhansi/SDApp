@@ -15,7 +15,7 @@ public class ParcelableData implements Parcelable {
 
 
     List<FileEntry> listLargeFiles;
-    List<Map<String,String>> listFrequentFiles;
+    List<Map<String, String>> listFrequentFiles;
     long avgFileSize;
 
     public List<FileEntry> getListLargeFiles() {
@@ -42,7 +42,7 @@ public class ParcelableData implements Parcelable {
         this.avgFileSize = avgFileSize;
     }
 
-    public ParcelableData(){
+    public ParcelableData() {
         listLargeFiles = new ArrayList<FileEntry>();
         listFrequentFiles = new ArrayList<Map<String, String>>(5);
         long avgFileSize = 0;
@@ -51,8 +51,8 @@ public class ParcelableData implements Parcelable {
 
     public ParcelableData(Parcel in) {
         this.avgFileSize = in.readLong();
-        in.readList(this.listLargeFiles,  null);
-        in.readList(this.listFrequentFiles,  null);
+        in.readList(this.listLargeFiles, null);
+        in.readList(this.listFrequentFiles, null);
 
     }
 

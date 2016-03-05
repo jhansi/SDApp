@@ -5,7 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
+//import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,8 +21,8 @@ public class SQLiteDataSource {
     // Database fields
     private SQLiteDatabase database;
     private SQLiteHelper dbHelper;
-    private String[] allColumns = { SQLiteHelper.COLUMN_ID, SQLiteHelper.COLUMN_FILE_NAME, SQLiteHelper.COLUMN_FILE_SIZE, SQLiteHelper.COLUMN_FILE_EXT};
-    private  static long insertId = 0;
+    private String[] allColumns = {SQLiteHelper.COLUMN_ID, SQLiteHelper.COLUMN_FILE_NAME, SQLiteHelper.COLUMN_FILE_SIZE, SQLiteHelper.COLUMN_FILE_EXT};
+    private static long insertId = 0;
     private static long totalFileSize = 0;
 
     private static final String FILE_EXT = "ext";
@@ -51,22 +51,17 @@ public class SQLiteDataSource {
         values.put(SQLiteHelper.COLUMN_FILE_NAME, file_name);
 
         long ret = insertId = database.insert(SQLiteHelper.TABLE_SDFILES, null, values);
-//        Cursor cursor = database.query(SQLiteHelper.TABLE_SDFILES,
-//                allColumns, SQLiteHelper.COLUMN_ID + " = " + insertId, null, null, null, null);
-//        cursor.moveToFirst();
-//       FileEntry newFileEntry = cursorToFileEntry(cursor);
-//        cursor.close();
         return;
     }
 
     public void deleteFileEntry(FileEntry fileEntry) {
         long id = fileEntry.getId();
-        Log.w(TAG, "FileEntry deleted with id: " + id);
+        //Log.w(TAG, "FileEntry deleted with id: " + id);
         database.delete(SQLiteHelper.TABLE_SDFILES, SQLiteHelper.COLUMN_ID + " = " + id, null);
     }
 
     public void deleteAllEntries() {
-        Log.w(TAG, "table deleted");
+        // Log.w(TAG, "table deleted");
         database.delete(SQLiteHelper.TABLE_SDFILES, null, null);
     }
 
@@ -82,7 +77,6 @@ public class SQLiteDataSource {
             fileEntries.add(fileEntry);
             cursor.moveToNext();
         }
-        // make sure to close the cursor
         cursor.close();
         return fileEntries;
     }
@@ -90,11 +84,8 @@ public class SQLiteDataSource {
 
     public List<FileEntry> getLargestAllFileEntry() {
         List<FileEntry> fileEntries = new ArrayList<FileEntry>();
-        final String READ_TOP_RECORDS = "SELECT * FROM " + SQLiteHelper.TABLE_SDFILES + " ORDER BY "+ SQLiteHelper.COLUMN_FILE_SIZE +" DESC LIMIT 10";
+        final String READ_TOP_RECORDS = "SELECT * FROM " + SQLiteHelper.TABLE_SDFILES + " ORDER BY " + SQLiteHelper.COLUMN_FILE_SIZE + " DESC LIMIT 10";
         Cursor cursor = database.rawQuery(READ_TOP_RECORDS, null);
-
-//        Cursor cursor = database.query(SQLiteHelper.TABLE_SDFILES,
-//                allColumns, null, null, null, null, null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -107,28 +98,27 @@ public class SQLiteDataSource {
         return fileEntries;
     }
 
-    public long getAverageFilesize(){
+    public long getAverageFilesize() {
 
-        final String READ_SUM_RECORDS = "SELECT SUM(" +  SQLiteHelper.COLUMN_FILE_SIZE +") FROM "+ SQLiteHelper.TABLE_SDFILES;
+        final String READ_SUM_RECORDS = "SELECT SUM(" + SQLiteHelper.COLUMN_FILE_SIZE + ") FROM " + SQLiteHelper.TABLE_SDFILES;
 
         long avgFileSize = 0;
         Cursor cursor = database.rawQuery(READ_SUM_RECORDS, null);
-        if(cursor.moveToFirst())
-        {
+        if (cursor.moveToFirst()) {
             totalFileSize = cursor.getInt(0);
         }
-        avgFileSize = totalFileSize/insertId;
+        avgFileSize = totalFileSize / insertId;
 
         cursor.close();
         return avgFileSize;
     }
 
 
-    public List<Map<String,String>> getFrequentFiles(){
+    public List<Map<String, String>> getFrequentFiles() {
 
         List<Map<String, String>> extFreqList = new ArrayList<Map<String, String>>(5);
-        final String READ_FREQ_RECORDS = "SELECT "+ SQLiteHelper.COLUMN_FILE_EXT+ ", SUM( "+  SQLiteHelper.COLUMN_FILE_SIZE +" ) AS RELATIVE_FILE_SIZE  FROM "
-                + SQLiteHelper.TABLE_SDFILES + " GROUP BY " + SQLiteHelper.COLUMN_FILE_EXT +  " ORDER BY RELATIVE_FILE_SIZE DESC LIMIT 5" ;
+        final String READ_FREQ_RECORDS = "SELECT " + SQLiteHelper.COLUMN_FILE_EXT + ", SUM( " + SQLiteHelper.COLUMN_FILE_SIZE + " ) AS RELATIVE_FILE_SIZE  FROM "
+                + SQLiteHelper.TABLE_SDFILES + " GROUP BY " + SQLiteHelper.COLUMN_FILE_EXT + " ORDER BY RELATIVE_FILE_SIZE DESC LIMIT 5";
 
         Cursor cursor = database.rawQuery(READ_FREQ_RECORDS, null);
         cursor.moveToFirst();
@@ -140,9 +130,9 @@ public class SQLiteDataSource {
             float freq = ((cursor.getLong(1) * 100) / totalFileSize);
 
             int freqInt = Math.round(freq);
-            if(freqInt != 0) {
+            if (freqInt != 0) {
                 extEntry.put(FILE_FREQ, Integer.toString(freqInt));
-            }else{
+            } else {
                 extEntry.put(FILE_FREQ, "< 1");
             }
 
@@ -152,6 +142,7 @@ public class SQLiteDataSource {
 
         return extFreqList;
     }
+
     private FileEntry cursorToFileEntry(Cursor cursor) {
         FileEntry fileEntry = new FileEntry();
         fileEntry.setId(cursor.getLong(0));

@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
     FileScanService fileScanService;
     boolean status = false;
-    List<String> fileList = new ArrayList<String>();
 
     private static final String FILE_NAME = "name";
     private static final String FILE_SIZE = "size";
@@ -62,15 +61,14 @@ public class MainActivity extends AppCompatActivity {
 
     private long avgFileSize;
 
-    public  ProgressDialog myDialog;
+    public ProgressDialog myDialog;
 
     public static ParcelableData parcelableData = new ParcelableData();
+
     @Override
     protected void onStart() {
         super.onStart();
 
-        //Register BroadcastReceiver
-        //to receive event from our service
         myReceiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(fileScanService.MY_ACTION);
@@ -102,11 +100,10 @@ public class MainActivity extends AppCompatActivity {
 
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
 
-        if(isSyncCompleted) {
+        if (isSyncCompleted) {
             item.setVisible(true);
             doShare();
-        }
-        else{
+        } else {
             item.setVisible(false);
         }
         return true;
@@ -114,13 +111,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        //moveTaskToBack(true);
         super.onBackPressed();
         isSyncCompleted = false;
         MainActivity.this.stopService(new Intent(MainActivity.this, FileScanService.class));
     }
 
-    // When sync is done
+    // When scanning  is done
     public void doShare() {
 
         Intent shareIntent = new Intent();
@@ -128,11 +124,11 @@ public class MainActivity extends AppCompatActivity {
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, statistics.toString());
 
-        // When sync is done
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(shareIntent);
         }
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -155,9 +151,9 @@ public class MainActivity extends AppCompatActivity {
 
             isSyncCompleted = false;
 
-            FileScanService.LocalBinder localBinder = (FileScanService.LocalBinder)service;
+            FileScanService.LocalBinder localBinder = (FileScanService.LocalBinder) service;
             fileScanService = localBinder.getFileScanService();
-            if(fileScanService != null){
+            if (fileScanService != null) {
                 scanSDCard();
             }
             status = true;
@@ -174,24 +170,24 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void bindFileScanService(){
+    private void bindFileScanService() {
 
         Intent intent = new Intent(this, FileScanService.class);
-        bindService(intent,serviceConnection, Context.BIND_AUTO_CREATE);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
         status = true;
     }
 
-    private void unbindFileScanService(){
-        if(status) {
+    private void unbindFileScanService() {
+        if (status) {
             unbindService(serviceConnection);
-            Toast.makeText(MainActivity.this, "Service unbinded", Toast.LENGTH_SHORT).show();
+            //  Toast.makeText(MainActivity.this, "Service unbinded", Toast.LENGTH_SHORT).show();
             status = false;
         }
 
     }
 
 
-    private void updateUI(){
+    private void updateUI() {
         updateListView(parcelableData.listLargeFiles);
         updateAvgSizeTextView(parcelableData.avgFileSize);
         updateEXtFreqTable(parcelableData.listFrequentFiles);
@@ -200,35 +196,35 @@ public class MainActivity extends AppCompatActivity {
         invalidateOptionsMenu();
     }
 
-    private void scanSDCard(){
+    private void scanSDCard() {
         final String state = Environment.getExternalStorageState();
-            if ( Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state) ) {  // we can read the External Storage...
-             checkForPermissions();
-        if(status) {
+        if (Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {  // we can read the External Storage...
+            checkForPermissions();
+            if (status) {
 
-            statistics.setLength(0);
-            statistics.append(getResources().getString(R.string.top_files));
-            fileScanService.scanSDcard(Environment.getExternalStorageDirectory()); //TODO to be uncommented
+                statistics.setLength(0);
+                statistics.append(getResources().getString(R.string.top_files));
+                fileScanService.scanSDcard(Environment.getExternalStorageDirectory());
 
-            List<FileEntry> fileEntries = fileScanService.getLargestTenFiles();
-            updateListView(fileEntries);
+                List<FileEntry> fileEntries = fileScanService.getLargestTenFiles();
+                updateListView(fileEntries);
 
-            avgFileSize = fileScanService.getAvgFileSize();
-            updateAvgSizeTextView(avgFileSize);
+                avgFileSize = fileScanService.getAvgFileSize();
+                updateAvgSizeTextView(avgFileSize);
 
-            List<Map<String,String>>  ListExtFreq  = fileScanService.getFrequentFiles();
-            updateEXtFreqTable(ListExtFreq);
+                List<Map<String, String>> ListExtFreq = fileScanService.getFrequentFiles();
+                updateEXtFreqTable(ListExtFreq);
+            }
         }
-    }
         unbindFileScanService();
     }
 
     private void updateAvgSizeTextView(long avgFileSize) {
-        textViewAvgFileSize =  (TextView) findViewById(R.id.textViewAvgFileSize);
+        textViewAvgFileSize = (TextView) findViewById(R.id.textViewAvgFileSize);
         String file_size_avg = android.text.format.Formatter.formatFileSize(this, avgFileSize);
         Resources res = getResources();
         String text = String.format(res.getString(R.string.avg_file_size_data), file_size_avg);
-        statistics.append("."+text);
+        statistics.append("." + text);
         textViewAvgFileSize.setText(text);
     }
 
@@ -239,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
             if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                     && permissionCheck != PackageManager.PERMISSION_GRANTED) {
 
-                if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) ) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
                 } else {
 
@@ -253,11 +249,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void updateListView(List<FileEntry> fileEntries ){
+    private void updateListView(List<FileEntry> fileEntries) {
         final List<Map<String, String>> listLargestFiles = new ArrayList<Map<String, String>>(10);
 
 
-        for(FileEntry fileEntry : fileEntries ){
+        for (FileEntry fileEntry : fileEntries) {
             Map<String, String> listItemMap = new HashMap<String, String>();
             String file_name = fileEntry.getFile_name();
             listItemMap.put(FILE_NAME, file_name);
@@ -272,19 +268,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        ArrayAdapter adapter = new ArrayAdapter (MainActivity.this, R.layout.list_item_2, R.id.text, listLargestFiles)
-       // ArrayAdapter adapter = new ArrayAdapter (MainActivity.this, android.R.layout.simple_list_item_2, android.R.id.text1, listLargestFiles)
+        ArrayAdapter adapter = new ArrayAdapter(MainActivity.this, R.layout.list_item_2, R.id.text, listLargestFiles)
         {
-         @Override
+            @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(R.id.text);
                 TextView text2 = (TextView) view.findViewById(R.id.text2);
 
-             Map<String, String> listItemMapData= listLargestFiles.get(position);
-             //row.getText1().setText(listItemMapData.get(FILE_NAME));
-             //row.getText2().setText(data.getValue());
-
+                Map<String, String> listItemMapData = listLargestFiles.get(position);
                 text1.setText(listItemMapData.get(FILE_NAME));
                 text2.setText(listItemMapData.get(FILE_SIZE));
                 return view;
@@ -295,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void updateEXtFreqTable(List<Map<String, String>> listExtFreq){
+    private void updateEXtFreqTable(List<Map<String, String>> listExtFreq) {
 
         TextView textViewExt1 = (TextView) findViewById(R.id.textViewExt1);
         TextView textViewExt2 = (TextView) findViewById(R.id.textViewExt2);
@@ -304,24 +296,23 @@ public class MainActivity extends AppCompatActivity {
         TextView textViewExt5 = (TextView) findViewById(R.id.textViewExt5);
 
 
-
         TextView textViewFreq1 = (TextView) findViewById(R.id.textViewFreq1);
         TextView textViewFreq2 = (TextView) findViewById(R.id.textViewFreq2);
         TextView textViewFreq3 = (TextView) findViewById(R.id.textViewFreq3);
         TextView textViewFreq4 = (TextView) findViewById(R.id.textViewFreq4);
         TextView textViewFreq5 = (TextView) findViewById(R.id.textViewFreq5);
 
-        statistics.append("."+getResources().getString(R.string.freqFiles));
+        statistics.append("." + getResources().getString(R.string.freqFiles));
 
 
-        if(listExtFreq.size() > 0) {
+        if (listExtFreq.size() > 0) {
             String ext = listExtFreq.get(0).get(FILE_EXT);
             String freq = listExtFreq.get(0).get(FILE_FREQ);
             textViewExt1.setText(ext);
             textViewFreq1.setText(freq);
-            statistics.append(ext + "("+freq +"), ");
+            statistics.append(ext + "(" + freq + "), ");
         }
-        if(listExtFreq.size() > 1) {
+        if (listExtFreq.size() > 1) {
             String ext = listExtFreq.get(1).get(FILE_EXT);
             String freq = listExtFreq.get(1).get(FILE_FREQ);
             textViewExt2.setText(ext);
@@ -329,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
             statistics.append(ext + "(" + freq + "), ");
 
         }
-        if(listExtFreq.size() > 2){
+        if (listExtFreq.size() > 2) {
             String ext = listExtFreq.get(2).get(FILE_EXT);
             String freq = listExtFreq.get(2).get(FILE_FREQ);
 
@@ -339,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        if(listExtFreq.size() > 3){
+        if (listExtFreq.size() > 3) {
             String ext = listExtFreq.get(3).get(FILE_EXT);
             String freq = listExtFreq.get(3).get(FILE_FREQ);
 
@@ -349,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        if(listExtFreq.size() > 4) {
+        if (listExtFreq.size() > 4) {
             String ext = listExtFreq.get(4).get(FILE_EXT);
             String freq = listExtFreq.get(4).get(FILE_FREQ);
 
@@ -362,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void showDialog(){
+    private void showDialog() {
         myDialog = new ProgressDialog(MainActivity.this);
         myDialog.setMessage("Scanning...");
         myDialog.setCancelable(true);
@@ -395,7 +386,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context arg0, Intent arg1) {
             updateUI();
-            if(myDialog != null)
+            if (myDialog != null)
                 myDialog.dismiss();
 
 
