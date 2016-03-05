@@ -2,10 +2,12 @@ package com.android.jhansi.sdapp;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -63,11 +65,31 @@ public class MainActivity extends AppCompatActivity {
     private SimpleAdapter adapter;
 
     private long avgFileSize;
+
+    public  ProgressDialog myDialog;
+
+    public static ParcelableData parcelableData = new ParcelableData();
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        //Register BroadcastReceiver
+        //to receive event from our service
+        myReceiver = new MyReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(fileScanService.MY_ACTION);
+        registerReceiver(myReceiver, intentFilter);
+    }
+
     private TextView textViewAvgFileSize;
 
     public static boolean isSyncCompleted = false;
 
     public static StringBuffer statistics = new StringBuffer();
+
+
+    MyReceiver myReceiver;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,9 +134,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_sync:
-                //onRunSampleClick();
-                bindFileScanService(); //TODO uncomment later
+                //ShowDialogThread();
+                showDialog();
+                //bindFileScanService(); //TODO uncomment later
                // workerThread();
+                Intent intent = new Intent(this, FileScanService.class);
+                startService(intent);
                 return true;
 
             default:
@@ -185,6 +210,13 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        }).start();
 //    }
+
+    private void updateUI(){
+        updateListView(parcelableData.listLargeFiles);
+        updateAvgSizeTextView(parcelableData.avgFileSize);
+        updateEXtFreqTable(parcelableData.listFrequentFiles);
+    }
+
     private void scanSDCard(){
         final String state = Environment.getExternalStorageState();
             if ( Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state) ) {  // we can read the External Storage...
@@ -193,17 +225,17 @@ public class MainActivity extends AppCompatActivity {
 
             statistics.setLength(0);
             statistics.append(getResources().getString(R.string.top_files));
-//            fileScanService.scanSDcard(Environment.getExternalStorageDirectory()); //TODO to be uncommented
+            fileScanService.scanSDcard(Environment.getExternalStorageDirectory()); //TODO to be uncommented
 
-            File WhatsApp = new File("/storage/emulated/0/WhatsApp/Profile Pictures");
-            fileScanService.scanSDcard(WhatsApp);
+//            File WhatsApp = new File("/storage/emulated/0/WhatsApp/Profile Pictures");
+//            fileScanService.scanSDcard(WhatsApp);
             List<FileEntry> fileEntries = fileScanService.getLargestTenFiles();
 
            // fileScanService.workerThread();
             updateListView(fileEntries);
 
             avgFileSize = fileScanService.getAvgFileSize();
-            updateAvgSizeTextView();
+            updateAvgSizeTextView(avgFileSize);
 
             List<Map<String,String>>  ListExtFreq  = fileScanService.getFrequentFiles();
 
@@ -213,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
         unbindFileScanService();
     }
 
-    private void updateAvgSizeTextView() {
+    private void updateAvgSizeTextView(long avgFileSize) {
         textViewAvgFileSize =  (TextView) findViewById(R.id.textViewAvgFileSize);
         String file_size_avg = android.text.format.Formatter.formatFileSize(this, avgFileSize);
         Resources res = getResources();
@@ -379,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
         myDialog.show();
     }
 
-    public void onRunSampleClick(){
+    public void ShowDialogThread(){
         final Handler threadHandler;
         threadHandler = new Handler();
 
@@ -396,9 +428,27 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
+    @Override
+    protected void onStop() {
+        super.onStop();
 //        unbindFileScanService();
-//    };
+        unregisterReceiver(myReceiver);
+        super.onStop();
+    }
+
+
+    private class MyReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+
+            updateUI();
+            Toast.makeText(MainActivity.this,
+                    "Triggered by Service!\n"
+                            + "Data passed: " ,
+                    Toast.LENGTH_LONG).show();
+
+        }
+
+    }
 }

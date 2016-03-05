@@ -4,9 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
+import android.os.Parcelable;
 import android.util.Log;
 
 import java.io.File;
@@ -14,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 /**
  * Created by Jhansi Tavva on 3/2/16.
@@ -26,12 +24,15 @@ public class FileScanService extends Service {
 
     private static final String TAG = FileScanService.class.getSimpleName();
 
+    final static String MY_ACTION = "MY_ACTION";
+
+
     SQLiteDataSource sqlitedatasource;
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return Service.START_STICKY;
-    }
+//    @Override
+//    public int onStartCommand(Intent intent, int flags, int startId) {
+//        return Service.START_STICKY;
+//    }
     @Override
     public IBinder onBind(Intent intent) {
         return iBinder;
@@ -45,23 +46,23 @@ public class FileScanService extends Service {
     }
 
 
-    void workerThread(){
-        final Handler threadHandler;
-        threadHandler = new Handler();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                threadHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        File directory = Environment.getExternalStorageDirectory();
-                        getAllFilesOfDir( directory);
-                    }
-                });
-            }
-        }).start();
-    }
+//    void workerThread(){
+//        final Handler threadHandler;
+//        threadHandler = new Handler();
+//
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                threadHandler.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        File directory = Environment.getExternalStorageDirectory();
+//                        getAllFilesOfDir( directory);
+//                    }
+//                });
+//            }
+//        }).start();
+//    }
 
 void scanSDcard(File directory){
     sqlitedatasource = new SQLiteDataSource(this);
@@ -135,4 +136,52 @@ void scanSDcard(File directory){
     public List<Map<String,String>> getFrequentFiles(){
         return sqlitedatasource.getFrequentFiles();
     }
+
+
+    public long getAvgFileSizeFromService(){
+        return MainActivity.parcelableData.avgFileSize;
+    }
+
+    public List<Map<String,String>> getFrequentFilesFromService(){
+        return MainActivity.parcelableData.listFrequentFiles;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+        Log.i(TAG, "Service onStartCommand");
+
+        //Creating new thread for my service
+        //Always write your long running tasks in a separate thread, to avoid ANR
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                File WhatsApp = new File("/storage/emulated/0/WhatsApp/Profile Pictures");
+
+                scanSDcard(WhatsApp); //TODO change later
+//                scanSDcard(Environment.getExternalStorageDirectory());
+
+                List<FileEntry> list = getLargestTenFiles();
+                long avgFileSize = getAvgFileSize();
+                List<Map<String,String>> listFreqFiles = getFrequentFiles();
+
+
+                MainActivity.parcelableData.setAvgFileSize(avgFileSize);
+                MainActivity.parcelableData.setListFrequentFiles(listFreqFiles);
+                MainActivity.parcelableData.setListLargeFiles(list);
+
+                Intent intent = new Intent();
+                intent.setAction(MY_ACTION);
+//
+//                intent.putExtra("DATAPASSED",  parcelableData);
+                sendBroadcast(intent);
+
+                stopSelf();
+            }
+        }).start();
+
+        return Service.START_STICKY;
+    }
+
 }
